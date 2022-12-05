@@ -2,10 +2,10 @@ import Address from '../value-object/address'
 
 export default class Customer {
   private _id: string
-  private _name: string = ''
+  private _name = ''
   private _address!: Address
-  private _active: boolean = false
-  private _rewardPoints: number = 0
+  private _active = false
+  private _rewardPoints = 0
 
   constructor(id: string, name: string) {
     this._id = id
