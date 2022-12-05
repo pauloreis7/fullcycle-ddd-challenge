@@ -28,6 +28,7 @@ module.exports = {
     'prettier/prettier': 'error',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-empty-interface': 'off',
     'space-before-function-paren': 'off'
   }
 }

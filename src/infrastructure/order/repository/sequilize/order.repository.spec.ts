@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize-typescript'
+
 import Order from '../../../../domain/checkout/entity/order'
 import OrderItem from '../../../../domain/checkout/entity/order_item'
 import Customer from '../../../../domain/customer/entity/customer'
@@ -23,7 +24,7 @@ describe('Order repository test', () => {
       sync: { force: true }
     })
 
-    await sequelize.addModels([
+    sequelize.addModels([
       CustomerModel,
       OrderModel,
       OrderItemModel,
@@ -80,5 +81,157 @@ describe('Order repository test', () => {
         }
       ]
     })
+  })
+
+  it('should update an order', async () => {
+    const customerRepository = new CustomerRepository()
+    const customer = new Customer('123', 'Customer 1')
+    const address = new Address('Street 1', 1, 'Zipcode 1', 'City 1')
+    customer.changeAddress(address)
+    await customerRepository.create(customer)
+
+    const productRepository = new ProductRepository()
+    const product = new Product('123', 'Product 1', 10)
+    await productRepository.create(product)
+
+    const ordemItem1 = new OrderItem(
+      '1',
+      product.name,
+      product.price,
+      product.id,
+      2
+    )
+
+    const order = new Order('123', customer.id, [ordemItem1])
+    const orderRepository = new OrderRepository()
+    await orderRepository.create(order)
+
+    let orderModel = await OrderModel.findOne({
+      where: { id: order.id },
+      include: ['items']
+    })
+
+    expect(orderModel.toJSON()).toStrictEqual({
+      id: '123',
+      customer_id: '123',
+      total: 20,
+      items: [
+        {
+          id: ordemItem1.id,
+          name: ordemItem1.name,
+          price: ordemItem1.price,
+          quantity: ordemItem1.quantity,
+          order_id: '123',
+          product_id: '123'
+        }
+      ]
+    })
+
+    const product2 = new Product('456', 'Product 2', 20)
+    await productRepository.create(product2)
+
+    const updatedOrder = new Order('123', customer.id, [ordemItem1])
+
+    await orderRepository.update(updatedOrder)
+
+    orderModel = await OrderModel.findOne({
+      where: { id: updatedOrder.id },
+      include: ['items']
+    })
+
+    expect(orderModel.toJSON()).toStrictEqual({
+      id: updatedOrder.id,
+      customer_id: updatedOrder.customerId,
+      total: updatedOrder.total(),
+      items: [
+        {
+          id: ordemItem1.id,
+          name: ordemItem1.name,
+          price: ordemItem1.price,
+          quantity: ordemItem1.quantity,
+          order_id: '123',
+          product_id: '123'
+        }
+      ]
+    })
+  })
+
+  it('should find an order by id', async () => {
+    const customerRepository = new CustomerRepository()
+    const customer = new Customer('123', 'Customer 1')
+    const address = new Address('Street 1', 1, 'Zipcode 1', 'City 1')
+    customer.changeAddress(address)
+    await customerRepository.create(customer)
+
+    const productRepository = new ProductRepository()
+    const product = new Product('123', 'Product 1', 10)
+    await productRepository.create(product)
+
+    const ordemItem = new OrderItem(
+      '1',
+      product.name,
+      product.price,
+      product.id,
+      2
+    )
+
+    const order = new Order('123', '123', [ordemItem])
+
+    const orderRepository = new OrderRepository()
+    await orderRepository.create(order)
+
+    const orderExits = await orderRepository.find(order.id)
+
+    expect(order).toStrictEqual(orderExits)
+  })
+
+  it('should find all orders', async () => {
+    const customerRepository = new CustomerRepository()
+    const customer = new Customer('123', 'Customer 1')
+    const address = new Address('Street 1', 1, 'Zipcode 1', 'City 1')
+    customer.changeAddress(address)
+    await customerRepository.create(customer)
+
+    const productRepository = new ProductRepository()
+    const product = new Product('123', 'Product 1', 10)
+    await productRepository.create(product)
+
+    const ordemItem = new OrderItem(
+      '1',
+      product.name,
+      product.price,
+      product.id,
+      1
+    )
+
+    const ordemItem2 = new OrderItem(
+      '2',
+      product.name,
+      product.price,
+      product.id,
+      2
+    )
+
+    const ordemItem3 = new OrderItem(
+      '3',
+      product.name,
+      product.price,
+      product.id,
+      3
+    )
+
+    const orderRepository = new OrderRepository()
+
+    const order = new Order('123', '123', [ordemItem])
+    await orderRepository.create(order)
+
+    const order2 = new Order('456', '123', [ordemItem2, ordemItem3])
+    await orderRepository.create(order2)
+
+    const foundOrders = await orderRepository.findAll()
+    const orders = [order, order2]
+
+    expect(foundOrders).toHaveLength(2)
+    expect(orders).toEqual(foundOrders)
   })
 })

@@ -64,7 +64,8 @@ export default class CustomerRepository implements CustomerRepositoryInterface {
     const customerModels = await CustomerModel.findAll()
 
     const customers = customerModels.map(customerModels => {
-      let customer = new Customer(customerModels.id, customerModels.name)
+      const customer = new Customer(customerModels.id, customerModels.name)
+
       customer.addRewardPoints(customerModels.rewardPoints)
       const address = new Address(
         customerModels.street,
