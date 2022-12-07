@@ -130,7 +130,15 @@ describe('Order repository test', () => {
     const product2 = new Product('456', 'Product 2', 20)
     await productRepository.create(product2)
 
-    const updatedOrder = new Order('123', customer.id, [ordemItem1])
+    const ordemItem2 = new OrderItem(
+      '2',
+      product2.name,
+      product2.price,
+      product2.id,
+      3
+    )
+
+    const updatedOrder = new Order('123', customer.id, [ordemItem1, ordemItem2])
 
     await orderRepository.update(updatedOrder)
 
@@ -151,6 +159,14 @@ describe('Order repository test', () => {
           quantity: ordemItem1.quantity,
           order_id: '123',
           product_id: '123'
+        },
+        {
+          id: ordemItem2.id,
+          name: ordemItem2.name,
+          price: ordemItem2.price,
+          quantity: ordemItem2.quantity,
+          order_id: '123',
+          product_id: '456'
         }
       ]
     })
